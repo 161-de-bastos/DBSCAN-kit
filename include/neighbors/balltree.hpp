@@ -4,9 +4,9 @@
 #include <memory>
 #include <vector>
 
-class KDTree : public NeighborSearch {
+class BallTree : NeighborSearch{
 public:
-    explicit KDTree(const Dataset& X);
+    explicit BallTree(const Dataset& X);
 
     void radius_query(
         int idx, 
@@ -20,24 +20,21 @@ public:
 
 private:
     struct Node {
-        int index;
-        int axis;
-        real_t split;
+        std::vector<int> indexi;
+        Point center;
+        real_t radius;
         Node* left;
         Node* right;
     };
 
     const Dataset& X_;
-    std::vector<int> idx_;
     std::unique_ptr<Node> root_;
     int dim_;
+    int leaf_size_ = 16;
 
-    std::unique_ptr<Node> build(
-        int l,
-        int r,
-        int depth
-    );
-
+    std::unique_ptr<Node> build(const std::vector<int>& idxs);
+    void compute_center(Node* node);
+    
     void radius_node(
         const Node* node,
         const Point& query,
