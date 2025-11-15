@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-class BallTree : NeighborSearch{
+class BallTree : public NeighborSearch{
 public:
     explicit BallTree(const Dataset& X);
 
