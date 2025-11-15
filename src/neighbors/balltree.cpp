@@ -103,3 +103,24 @@ void BallTree::radius_node(
     radius_node(node->left, query, eps2, out);
     radius_node(node->right, query, eps2, out);
 }
+
+void BallTree::radius_query(
+    int idx, 
+    real_t eps,
+    std::vector<int>& out_idx
+) const {
+    out_idx.clear();
+    if (!root_) return;
+    const Point& query = X_[idx];
+    real_t eps2 = eps * eps;
+    radius_node(root_.get(), query, eps2, out_idx);
+
+    out_idx.erase(
+        std::remove(
+            out_idx.begin(),
+            out_idx.end(),
+            idx
+        ),
+        out_idx.end()
+    );
+}
