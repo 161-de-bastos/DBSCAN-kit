@@ -1,55 +1,73 @@
-#include <iostream>
-#include <memory>
-#include "common.hpp"
+#include "config.hpp"
+#include "neighbors/factory.hpp"
 #include "dbscan.hpp"
-#include "neighbors/brute.hpp"
-#include "neighbors/kdtree.hpp"
-#include "neighbors/balltree.hpp"
+#include "dataset.hpp"
 
-std::unique_ptr<NeighborSearch> make_backend(
-    const Dataset& X,
-    const std::string& which
-) {
-    if (which == "brute") {
-        return std::make_unique<bruteForce>(X);
-    } else if (which == "kdtree") {
-        return std::make_unique<KDTree>(X);
-    } else if (which == "balltree") {
-        return std::make_unique<BallTree>(X);
-    }
-    return std::make_unique<bruteForce>(X);
-}
+#include <iostream>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 int main(int argc, char** argv) {
-    Dataset X = {
-        {0.0, 0.0},
-        {0.1, 0.0},
-        {0.0, 0.1},
-        {5.0, 5.0},
-        {5.1, 5.0},
-        {5.0, 5.1},
-        {10.0, 10.0}
-    };
-
-    std::string backend = "brute";
-    if (argc > 1) {
-        backend = argv[1];
+    // 1. Leer YAML
+    Config cfg;
+    if (!load_config("config.yaml", cfg)) {
+        std::cerr << "No se pudo cargar config.yaml. Usando defaults.\n";
     }
 
+    // 2. Elegir modo de paralelización
+    ComputeMode mode = ComputeMode::Serial;
+    if (cfg.parallel.mode == "omp") {
+        mode = ComputeMode::Omp;
+    }
+
+    // 3. Aplicar número de hilos si corresponde
+    #ifdef _OPENMP
+        if (mode == ComputeMode::Omp && cfg.parallel.num_threads > 0) {
+            omp_set_num_threads(cfg.parallel.num_threads);
+        }
+    #endif
+
+    // 4. Cargar dataset (reemplaza con tu carga real)
+    Dataset X;
+
+    if (!load_csv(cfg.data.path, X, cfg.data.start_col)) {
+        std::cerr << "Dataset vacío. Carga tus datos en X.\n";
+        return 1;
+    }
+
+    std::cout << "Dataset cargado: "
+            << X.size() << " filas, "
+            << (X.empty() ? 0 : X[0].size())
+            << " columnas\n";
+
+    // 5. Crear backend según YAML
+    auto ns = make_backend(
+        X,
+        cfg.backend,   // brute | kdtree | balltree
+        mode           // serial | omp
+    );
+
+    // 6. Configurar DBSCAN
     DBSCANParams params;
-    params.eps     = 0.3;
-    params.minPts = 3;
+    params.eps    = cfg.dbscan.eps;
+    params.minPts = cfg.dbscan.minPts;
 
-    auto ns = make_backend(X, backend);
-    DBSCAN db(X, std::move(ns));
-    DBSCANResult res = db.run(params);
+    DBSCAN dbscan(X, std::move(ns));
 
-    std::cout << "Backend: " << backend << "\n";
-    std::cout << "clusters=" << res.n_clusters
-              << " noise=" << res.n_noise << "\n";
+    // 7. Ejecutar
+    DBSCANResult result = dbscan.fit(params);
 
-    for (std::size_t i = 0; i < X.size(); ++i) {
-        std::cout << "punto " << i << " -> label=" << res.labels[i] << "\n";
+    // 8. Mostrar salida mínima
+    std::cout << "Clusters encontrados: " << result.n_clusters << "\n";
+    std::cout << "Ruido: " << result.n_noise << "\n";
+    std::cout << "Puntos: " << result.labels.size() << "\n";
+
+    // 9. Exportar CSV con id y cluster
+    if (!save_labels_csv("clusters.csv", result.labels)) {
+        std::cerr << "No se pudo guardar clusters.csv\n";
     }
+
     return 0;
 }

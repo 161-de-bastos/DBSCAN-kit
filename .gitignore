@@ -1,5 +1,8 @@
 # Utils
-.vscode/
+build/
+data/
+*.log
+dbscan_app
 
 # Prerequisites
 *.d
