@@ -3,7 +3,10 @@
 #include <stdexcept>
 #include <cmath>
 
-inline real_t euclidean_dist(const Point& a, const Point& b) {
+inline real_t euclidean_dist(
+    const Point& a, 
+    const Point& b
+) {
     if (a.size() != b.size()) throw std::runtime_error("Incompatible dimensions");
 
     real_t sum = 0.0;
@@ -13,4 +16,3 @@ inline real_t euclidean_dist(const Point& a, const Point& b) {
     }
     return sum;
 }
-
