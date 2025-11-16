@@ -6,7 +6,10 @@
 
 class KDTree : public NeighborSearch {
 public:
-    explicit KDTree(const Dataset& X);
+    explicit KDTree(
+        const Dataset& X,
+        ComputeMode mode = ComputeMode::Serial
+    );
 
     void radius_query(
         int idx, 
@@ -28,11 +31,19 @@ private:
     };
 
     const Dataset& X_;
+    ComputeMode mode_;
+
     std::vector<int> idx_;
     std::unique_ptr<Node> root_;
-    int dim_;
+    int dim_ = 0;
 
-    std::unique_ptr<Node> build(
+    std::unique_ptr<Node> build_serial(
+        int l,
+        int r,
+        int depth
+    );
+
+    std::unique_ptr<Node> build_omp(
         int l,
         int r,
         int depth

@@ -6,7 +6,10 @@
 
 class BallTree : public NeighborSearch{
 public:
-    explicit BallTree(const Dataset& X);
+    explicit BallTree(
+        const Dataset& X,
+        ComputeMode mode = ComputeMode::Serial
+    );
 
     void radius_query(
         int idx, 
@@ -28,11 +31,22 @@ private:
     };
 
     const Dataset& X_;
+    ComputeMode mode_;
+
     std::unique_ptr<Node> root_;
     int dim_;
     int leaf_size_ = 16;
 
-    std::unique_ptr<Node> build(const std::vector<int>& idxs);
+    std::unique_ptr<Node> build_serial(
+        const std::vector<int>& idxs,
+        int depth
+    );
+
+    std::unique_ptr<Node> build_omp(
+        const std::vector<int>& idxs,
+        int depth
+    );
+
     void compute_center(Node* node);
     
     void radius_node(
