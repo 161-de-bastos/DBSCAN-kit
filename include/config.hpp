@@ -11,12 +11,18 @@ struct DBSCANConfig {
     int minPts = 5;
 };
 
+struct DataConfig {
+    std::string path = "";
+    int start_col = 0;
+};
+
 struct Config {
     std::string task = "dbscan";
     std::string backend = "brute";
 
     ParallelConfig parallel;
     DBSCANConfig dbscan;
+    DataConfig data;
 };
 
 bool load_config(

@@ -64,18 +64,17 @@ bool load_config(
             }
         } else if (indent >= 2) {
             // dentro de una sección
-            if (section == "parallel") {
-                if (key == "mode") {
-                    cfg.parallel.mode = value;
-                } else if (key == "num_threads") {
-                    cfg.parallel.num_threads = std::stoi(value);
-                }
+            if (section == "data") {
+                if (key == "path") cfg.data.path = value;
+                if (key == "start_col") cfg.data.start_col = std::stoi(value);
+            
+            } else if (section == "parallel") {
+                if (key == "mode") cfg.parallel.mode = value;
+                if (key == "num_threads") cfg.parallel.num_threads = std::stoi(value);
+            
             } else if (section == "dbscan") {
-                if (key == "eps") {
-                    cfg.dbscan.eps = std::stod(value);
-                } else if (key == "minPts") {
-                    cfg.dbscan.minPts = std::stoi(value);
-                }
+                if (key == "eps") cfg.dbscan.eps = std::stod(value);
+                if (key == "minPts") cfg.dbscan.minPts = std::stoi(value);
             }
         }
     }
