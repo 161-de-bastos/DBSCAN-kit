@@ -5,7 +5,7 @@ DBSCAN::DBSCAN(
     std::unique_ptr<NeighborSearch> ns
 ) : X_(X), ns_(std::move(ns)) {}
 
-DBSCANResult DBSCAN::run(const DBSCANParams& params) {
+DBSCANResult DBSCAN::fit(const DBSCANParams& params) {
     const int n = ns_->size();
     DBSCANResult res;
     res.labels.assign(n, -2); // -2 = UNVISITED
@@ -27,13 +27,17 @@ DBSCANResult DBSCAN::run(const DBSCANParams& params) {
             continue;
         }
 
+        // nuevo cluster
         res.labels[i] = current_cluster;
         seed_set = neighbors;
 
+        // expandir cluster
         for (std::size_t k = 0; k < seed_set.size(); ++k) {
             int j = seed_set[k];
 
+            // era ruido, ahora es borde del cluster
             if (res.labels[j] == -1) res.labels[j] = current_cluster;
+            // ya fue asignado
             if (res.labels[j] != -2) continue;
 
             res.labels[j] = current_cluster;

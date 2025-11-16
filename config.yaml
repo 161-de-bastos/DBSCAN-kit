@@ -1,0 +1,11 @@
+task: dbscan
+
+backend: kdtree         # brute | kdtree | balltree
+
+parallel:
+  mode: omp             # serial | omp
+  num_threads: 4        # 0 = no forzar, usar OMP_NUM_THREADS o default
+
+dbscan:
+  eps: 0.3
+  minPts: 5

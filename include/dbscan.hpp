@@ -22,7 +22,7 @@ public:
         std::unique_ptr<NeighborSearch> ns
     );
 
-    DBSCANResult run(const DBSCANParams& params);
+    DBSCANResult fit(const DBSCANParams& params);
 
 private:
     const Dataset& X_;
